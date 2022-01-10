@@ -11,9 +11,8 @@ from torch.autograd import Variable
 
 
 class Network(nn.Module):
-
     def __init__(self, input_size, nb_action):
-        super(Network, self).__init__()
+        super().__init__()
         self.input_size = input_size
         self.nb_action = nb_action
         self.fc1 = nn.Linear(input_size, 30)
@@ -28,7 +27,6 @@ class Network(nn.Module):
 
 # experience replay
 class ReplayMemory(object):
-
     def __init__(self, capacity):
         self.capacity = capacity
         self.memory = []
@@ -47,7 +45,6 @@ class ReplayMemory(object):
 
 # deep q-learning model
 class Dqn(object):
-
     def __init__(self, input_size, nb_action, gamma):
         self.gamma = gamma
         self.reward_window = []

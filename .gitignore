@@ -3,6 +3,9 @@ __pycache__/
 *.py[cod]
 *$py.class
 
+# Brain File
+last_brain.pth
+
 # Memory File
 *.pth
 

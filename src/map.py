@@ -213,7 +213,6 @@ class MyPaintWidget(Widget):
 
 
 class CarApp(App):
-
     def build(self):
         parent = Game()
         parent.serve_car()
