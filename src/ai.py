@@ -21,7 +21,6 @@ class Network(nn.Module):
     def forward(self, state):
         x = F.relu(self.fc1(state))
         q_values = self.fc2(x)
-
         return q_values
 
 
@@ -39,7 +38,6 @@ class ReplayMemory(object):
 
     def sample(self, batch_size):
         samples = zip(*random.sample(self.memory, batch_size))
-
         return map(lambda x: Variable(torch.cat(x, 0)), samples)
 
 
@@ -60,10 +58,12 @@ class Dqn(object):
             probs = F.softmax(self.model(Variable(state)) * 100, dim=1)
             action = probs.multinomial(1)
 
-        return action.data[0,0]
+        return action.data[0, 0]
 
     def learn(self, batch_state, batch_next_state, batch_reward, batch_action):
-        outputs = self.model(batch_state).gather(1, batch_action.unsqueeze(1)).squeeze(1)
+        outputs = (
+            self.model(batch_state).gather(1, batch_action.unsqueeze(1)).squeeze(1)
+        )
         next_outputs = self.model(batch_next_state).detach().max(1)[0]
         target = self.gamma * next_outputs + batch_reward
         td_loss = F.smooth_l1_loss(outputs, target)
@@ -73,11 +73,23 @@ class Dqn(object):
 
     def update(self, reward, new_signal):
         new_state = torch.Tensor(new_signal).float().unsqueeze(0)
-        self.memory.push((self.last_state, new_state, torch.LongTensor([int(self.last_action)]), torch.Tensor([self.last_reward])))
+        self.memory.push(
+            (
+                self.last_state,
+                new_state,
+                torch.LongTensor([int(self.last_action)]),
+                torch.Tensor([self.last_reward]),
+            )
+        )
         action = self.select_action(new_state)
 
         if len(self.memory.memory) > 100:
-            batch_state, batch_next_state, batch_action, batch_reward = self.memory.sample(100)
+            (
+                batch_state,
+                batch_next_state,
+                batch_action,
+                batch_reward,
+            ) = self.memory.sample(100)
             self.learn(batch_state, batch_next_state, batch_reward, batch_action)
 
         self.last_action = action
@@ -95,20 +107,24 @@ class Dqn(object):
         return sum(self.reward_window) / (len(self.reward_window) + 1)
 
     def save(self):
-        torch.save({'state_dict': self.model.state_dict(),
-                    'optimizer': self.optimizer.state_dict()},
-                    'last_brain.pth')
+        torch.save(
+            {
+                "state_dict": self.model.state_dict(),
+                "optimizer": self.optimizer.state_dict(),
+            },
+            "last_brain.pth",
+        )
 
     def load(self):
-        if os.path.isfile('last_brain.pth'):
-            print('=> loading checkpoint...')
-            checkpoint = torch.load('last_brain.pth')
-            self.model.load_state_dict(checkpoint['state_dict'])
-            self.optimizer.load_state_dict(checkpoint['optimizer'])
-            print('done!')
+        if os.path.isfile("last_brain.pth"):
+            print("=> loading checkpoint...")
+            checkpoint = torch.load("last_brain.pth")
+            self.model.load_state_dict(checkpoint["state_dict"])
+            self.optimizer.load_state_dict(checkpoint["optimizer"])
+            print("done!")
         else:
-            print('no checkpoint found...')
+            print("no checkpoint found...")
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     pass
